@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.b2b.canbo.mapper.CanboOrderPlannedMapper" >
+
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.canbo.sd.CanboOrderPlanned" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO canbo_order_planned(
+        	b2b_order_id,
+        	data_source,
+			order_no,
+			engineer_name,
+			engineer_mobile,
+			process_flag,
+			process_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			quarter
+		) VALUES (
+			#{b2bOrderId},
+			#{dataSource},
+			#{orderNo},
+			#{engineerName},
+			#{engineerMobile},
+			#{processFlag},
+			#{processTime},
+			#{createById},
+			#{createDt},
+			#{updateById},
+			#{updateDt},
+			#{quarter}
+		)
+    </insert>
+
+	<update id="updateProcessFlag">
+		UPDATE
+		canbo_order_planned
+		SET
+			process_flag = #{processFlag},
+			update_date = #{updateDt},
+			process_time =  process_time+1
+			<if test="processComment != null and processComment != ''">
+				,process_comment = #{processComment}
+			</if>
+		WHERE
+			id= #{id}
+	</update>
+
+</mapper>

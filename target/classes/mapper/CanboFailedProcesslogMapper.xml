@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.b2b.canbo.mapper.CanboFailedProcesslogMapper" >
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO canbo_failed_processlog(
+        	id,
+        	b2b_order_id,
+        	data_source,
+			interface_name,
+			info_json,
+			result_json,
+			process_comment,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			quarter
+		) VALUES (
+			#{id},
+			#{b2bOrderId},
+			#{dataSource},
+			#{interfaceName},
+			#{infoJson},
+			#{resultJson},
+			#{processComment},
+			#{createById},
+			#{createDt},
+			#{updateById},
+			#{updateDt},
+			#{quarter}
+		)
+    </insert>
+
+	<select id="getList" resultType="com.kkl.kklplus.entity.b2bcenter.rpt.B2BOrderProcesslog">
+		SELECT
+			id,
+			interface_name,
+			info_json,
+			result_json,
+			data_source,
+			process_flag,
+			process_comment,
+			create_by,
+			create_date as 'createDt'
+		FROM
+			canbo_failed_processlog
+		<where>
+			AND process_flag = 0
+			<if test="processLogSearchModel != null and processLogSearchModel.dataSource != null and processLogSearchModel.dataSource > 0">
+				AND data_source = #{processLogSearchModel.dataSource}
+			</if>
+			<if test="code != null and code != ''">
+				AND interface_name = #{code}
+			</if>
+			<if test="processLogSearchModel != null and processLogSearchModel.beginCreateDt!= null">
+				AND create_date >= #{processLogSearchModel.beginCreateDt}
+			</if>
+			<if test="processLogSearchModel != null and processLogSearchModel.endCreateDt!= null">
+				AND create_date &lt;= #{processLogSearchModel.endCreateDt}
+			</if>
+		</where>
+		ORDER BY create_date DESC
+	</select>
+
+	<update id="updateFailedLogTimes">
+		UPDATE
+			canbo_failed_processlog
+		SET
+			process_time    = process_time+1
+			<if test="processComment != null and processComment != ''">
+				,process_comment = #{processComment}
+			</if>
+		WHERE
+			id= #{id}
+	</update>
+
+	<select id="getFailedLogById" resultType="java.lang.Long">
+		SELECT
+			id
+		FROM
+			canbo_failed_processlog
+		WHERE
+			id = #{id}
+		LIMIT 1
+	</select>
+
+	<select id="getFailedLogMessageById" resultType="com.kkl.kklplus.entity.b2bcenter.rpt.B2BOrderProcesslog">
+		SELECT
+			id,
+			interface_name,
+			info_json,
+			result_json,
+			data_source,
+			process_comment
+		FROM
+			canbo_failed_processlog
+		WHERE
+			id = #{id}
+	</select>
+
+	<update id="closeFailedLogById">
+		UPDATE
+			canbo_failed_processlog
+		SET
+			process_flag = 4
+		WHERE
+			id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.b2b.canbo.mapper.B2BProcesslogMapper" >
+    <insert id="insert" parameterType="com.kkl.kklplus.entity.b2bcenter.rpt.B2BOrderProcesslog" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO canbo_b2b_processlog(
+        	data_source,
+			interface_name,
+			info_json,
+			result_json,
+			process_comment,
+			process_flag,
+			process_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			quarter
+		) VALUES (
+			#{dataSource},
+			#{interfaceName},
+			#{infoJson},
+			#{resultJson},
+			#{processComment},
+			#{processFlag},
+			#{processTime},
+			#{createById},
+			#{createDt},
+			#{updateById},
+			#{updateDt},
+			#{quarter}
+		)
+    </insert>
+
+	<update id="updateProcessFlag">
+		UPDATE
+		canbo_b2b_processlog
+		SET
+			process_flag    = #{processFlag},
+			update_date     = #{updateDt},
+			result_json = #{resultJson}
+			<if test="processComment != null and processComment != ''">
+				,process_comment = #{processComment}
+			</if>
+		WHERE
+			id= #{id}
+	</update>
+
+	<select id="getList" resultType="com.kkl.kklplus.entity.b2bcenter.rpt.B2BOrderProcesslog">
+		SELECT
+		id,
+		interface_name,
+		info_json,
+		result_json,
+		data_source,
+		process_flag,
+		process_comment,
+		create_by,
+		create_date as 'createDt'
+		FROM  canbo_b2b_processlog
+		<where>
+			<if test="processLogSearchModel != null and processLogSearchModel.dataSource != null and processLogSearchModel.dataSource > 0">
+				AND data_source = #{processLogSearchModel.dataSource}
+			</if>
+			<if test="code != null and code != ''">
+				AND interface_name = #{code}
+			</if>
+			<if test="processLogSearchModel != null and processLogSearchModel.processFlag != null">
+				AND process_flag =#{processLogSearchModel.processFlag}
+			</if>
+            <if test="processLogSearchModel != null and processLogSearchModel.beginCreateDt!= null">
+                AND create_date >= #{processLogSearchModel.beginCreateDt}
+            </if>
+            <if test="processLogSearchModel != null and processLogSearchModel.endCreateDt!= null">
+                AND create_date &lt;= #{processLogSearchModel.endCreateDt}
+            </if>
+		</where>
+		ORDER BY create_date DESC
+	</select>
+</mapper>

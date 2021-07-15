@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.b2b.canbo.mapper.OrderInfoMapper">
+
+	<select id="getList" resultType="com.kkl.kklplus.b2b.canbo.entity.CanboOrderInfo" >
+		SELECT
+			id,
+			data_source,
+			shop_id,
+			order_no,
+			user_name,
+			user_mobile,
+			CONCAT(user_province,' ',user_city,' ',user_county,' ',user_address) as 'userAddress',
+			service_type_name,
+			in_or_out,
+			brand_name,
+			remark,
+			issue_by as 'isSueBy',
+			items,
+			status,
+			process_flag,
+			process_time,
+			process_comment,
+			quarter,
+			create_date as 'createDt',
+			buy_shop,
+			user_phone
+		FROM
+			canbo_order_info
+		<where>
+			<choose>
+				<when test="beginCreateDt != null ">
+					<choose>
+						<when test="endCreateDt != null">
+							AND create_date between #{beginCreateDt} and #{endCreateDt}
+						</when>
+						<otherwise>
+							AND create_date >= #{beginCreateDt}
+						</otherwise>
+					</choose>
+				</when>
+				<otherwise>
+					<if test="endCreateDt != null">
+						AND create_date &lt;=  #{endCreateDt}
+					</if>
+				</otherwise>
+			</choose>
+			AND process_flag BETWEEN 0 AND 3
+			<if test="processFlags != null">
+				AND process_flag in
+				<foreach collection="processFlags"  item="processFlag" open="(" close=")" separator=",">
+					#{processFlag.value}
+				</foreach>
+			</if>
+			<if test="dataSource != null">
+				AND data_source = #{dataSource}
+			</if>
+			<if test="parentBizOrderId != null and parentBizOrderId != ''">
+				AND order_no LIKE CONCAT(#{parentBizOrderId}, '%')
+			</if>
+			<if test="userName != null and userName != ''">
+				AND user_name LIKE CONCAT(#{userName}, '%')
+			</if>
+			<if test="userMobile != null and userMobile != ''">
+				AND user_mobile LIKE CONCAT(#{userMobile}, '%')
+			</if>
+			<if test="userAddress != null and userAddress != ''">
+				AND CONCAT(user_province,user_city,user_county,user_address) LIKE CONCAT('%', #{userAddress}, '%')
+			</if>
+			<if test="brand != null and brand != ''">
+				AND brand_name LIKE CONCAT('%',#{brand},'%')
+			</if>
+		</where>
+		ORDER BY
+			create_date
+	</select>
+
+	<select id="findOrdersProcessFlag" resultType="com.kkl.kklplus.b2b.canbo.entity.CanboOrderInfo">
+		SELECT
+			id,
+			data_source,
+			order_no,
+			process_flag,
+			status
+		FROM
+			canbo_order_info
+		<where>
+			<if test="orders != null and orders.size > 0">
+				<foreach collection="orders" item="order" index="key" separator="or">
+					(   data_source = #{key}
+						AND order_no in
+						<foreach collection="order" item="o" open="(" close=")" separator=",">
+							#{o.b2bOrderNo}
+						</foreach>
+					)
+				</foreach>
+			</if>
+		</where>
+		<if test="orders == null or orders.size == 0">
+			limit 0
+		</if>
+	</select>
+
+	<update id="updateTransferResult">
+		UPDATE
+			canbo_order_info
+		SET
+			process_flag = #{processFlag},
+			process_time = process_time+1,
+			order_id = #{orderId},
+			process_comment = #{processComment},
+			update_date = #{updateDt}
+	  	WHERE
+	  		id = #{id}
+	</update>
+	<update id="cancelOrderFormB2B">
+		UPDATE
+			canbo_order_info
+		SET
+			process_flag = #{processFlag},
+			update_date = #{updateDt},
+			process_comment = #{processComment}
+	  	WHERE
+	  		id = #{id}
+	</update>
+	<update id="cancelledOrder">
+		UPDATE
+			canbo_order_info
+		SET
+			process_flag = #{processFlag},
+			process_time = process_time+1,
+			update_date = #{updateDt},
+			process_comment = #{processComment},
+			update_by = #{updater}
+	  	WHERE
+	  		order_no = #{b2bOrderNo}
+	  		AND data_source = #{dataSource}
+	</update>
+
+	<select id="findOrderByOrderNoAndDataSource" resultType="java.lang.Long" >
+		SELECT
+			id
+		FROM
+			canbo_order_info
+		WHERE
+			order_no = #{orderNo}
+			AND data_source = #{dataSource}
+		limit 1
+	</select>
+	<select id="findOrdersProcessFlagByIds" resultType="com.kkl.kklplus.b2b.canbo.entity.CanboOrderInfo">
+		SELECT
+			id,
+			data_source,
+			order_no,
+			process_flag,
+			status
+		FROM
+			canbo_order_info
+		<where>
+			<if test="ids != null and ids.size > 0">
+				<choose>
+					<when test="ids.size == 1">
+						id = #{ids[0]}
+					</when>
+					<otherwise>
+						id in
+						<foreach collection="ids" item="id" open="(" close=")" separator=",">
+							#{id}
+						</foreach>
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+		<if test="ids == null or ids.size == 0">
+			limit 0
+		</if>
+	</select>
+	<select id="findOrderNoById" resultType="java.lang.String">
+		SELECT
+			order_no
+		FROM
+			canbo_order_info
+		WHERE
+			id = #{id}
+	</select>
+    <select id="findOrderByOrderNos" resultType="com.kkl.kklplus.b2b.canbo.entity.OrderMessage">
+		SELECT
+			id,
+			order_no,
+			order_id
+		FROM
+			canbo_order_info
+		WHERE
+			data_source = #{dataSource}
+			AND
+			order_no IN
+			<foreach collection="orderNos" item="orderNo" open="(" close=")" separator=",">
+				#{orderNo}
+			</foreach>
+	</select>
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+		insert into canbo_order_info(
+			data_source,
+			order_no,
+			shop_id,
+			user_name,
+			user_mobile,
+			user_province,
+			user_city,
+			user_county,
+			user_address,
+			service_type_name,
+			in_or_out,
+			buy_date,
+			buy_shop,
+			brand_name,
+			order_type_name,
+			remark,
+			items,
+			status,
+			issue_by,
+			process_flag,
+			process_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			quarter,
+			user_phone
+		)VALUES (
+			#{dataSource},
+			#{orderNo},
+			#{shopId},
+			#{userName},
+			#{userMobile},
+			#{userProvince},
+			#{userCity},
+			#{userCounty},
+			#{userAddress},
+			#{serviceTypeName},
+			#{inOrOut},
+			#{buyDate},
+			#{buyShop},
+			#{brandName},
+			#{orderTypeName},
+			#{remark},
+			#{items},
+			#{status},
+			#{isSueBy},
+			#{processFlag},
+			#{processTime},
+			#{createById},
+			#{createDt},
+			#{updateById},
+			#{updateDt},
+			#{quarter},
+			#{userPhone}
+		)
+	</insert>
+</mapper>

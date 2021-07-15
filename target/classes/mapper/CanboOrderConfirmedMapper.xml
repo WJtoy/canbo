@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kkl.kklplus.b2b.canbo.mapper.CanboOrderConfirmedMapper">
+
+	<insert id="insert"  keyProperty="id" useGeneratedKeys="true">
+		insert into canbo_order_confirmed(
+		b2b_order_id,
+		data_source,
+		result_flag,
+		order_no,
+		third_send_flag,
+		third_send_message,
+		out_order_no,
+		process_flag,
+		process_time,
+		process_comment,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		quarter
+		)
+		VALUES
+		(
+		#{b2bOrderId},
+		#{dataSource},
+		#{resultFlag},
+		#{orderNo},
+		#{thirdSendFlag},
+		#{thirdSendMessage},
+		#{outOrderNo},
+		#{processFlag},
+		#{processTime},
+		#{processComment},
+		#{createById},
+		#{createDt},
+		#{updateById},
+		#{updateDt},
+		#{quarter}
+		)
+
+	</insert>
+
+	<update id="updateProcessFlag" >
+		UPDATE
+			 canbo_order_confirmed
+		SET
+			process_flag = #{processFlag},
+			process_time = process_time+1,
+			process_comment = #{processComment},
+			update_date = #{updateDate}
+		WHERE
+			id in
+			<foreach collection="orderConfirms" item="orderConfirm" separator="," open="(" close=")">
+				#{orderConfirm.id}
+			</foreach>
+	</update>
+
+</mapper>

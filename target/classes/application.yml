@@ -1,0 +1,145 @@
+---
+server:
+  port: 8890
+spring:
+  profiles: dev
+  application:
+    name: kklplus-b2b-canbo
+  # 数据源配置
+  #https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter
+  datasource:
+    druid:
+      driver-class-name: com.mysql.jdbc.Driver
+      #url: jdbc:mysql://120.76.21.34:18888/kklplus_b2b_canbo?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+      #username: root
+      #password: mycat@KKL123
+      url: jdbc:mysql://119.23.43.232:18355/kklplus_b2b_canbo?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+      username: b2bcanbo
+      password: cb.b2b@123
+      # 初始化大小，最小，最大
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      # 配置获取连接等待超时的时间
+      max-wait: 59000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 50000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      #检测连接是否有效的sql
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # PSCache Mysql下建议关闭
+      pool-prepared-statements: false
+      max-pool-prepared-statement-per-connection-size: -1
+  rabbitmq:
+    host: 192.168.0.200
+    port: 5672
+    username: admin
+    password: admin123
+    publisher-confirms: true
+    cache:
+      connection:
+        mode: channel
+    listener:
+      simple:
+        auto-startup: true
+        acknowledge-mode: manual
+        concurrency: 10
+        max-concurrency: 100
+        prefetch: 1
+    template:
+      retry:
+        initial-interval: 5000
+        max-attempts: 3
+        max-interval: 50000
+        multiplier: 1
+eureka:
+  instance:
+    prefer-ip-address: true
+    metadata-map:
+      zone: dev
+      function: kklplus-b2b-canbo
+  client:
+    serviceUrl:
+      defaultZone: http://dev:dev.123@localhost:8800/eureka/
+    healthcheck:
+      enabled: true
+info:
+  app:
+    name: ${spring.application.name}
+    desc: B2B Canbo服务
+  version: '0.0.1'
+management:
+  security:
+    enabled: false
+    roles: SUPERUSER
+mybatis:
+  type-aliases-package: com.kkl.kklplus.entity.canbo
+  mapper-locations: classpath*:/mapper/**/*Mapper.xml
+  configuration:
+    cache-enabled: true
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    org.mybatis: debug
+    com.kkl.kklplus: debug
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+
+canbo:
+  request-main-url: http://md.5mall.com/interface
+  app-key: 帅智峰测试1
+  app-secret: 123456
+  company-name: 测试厂商
+  scheduleEnabled: true
+#  request-main-url: http://kbfwintf.etwowin.com.cn/interface
+#  app-key: 3260
+#  app-secret: 123456
+#  company-name: 康宝电器
+  okhttp:
+    connect-timeout: 10
+    read-timeout: 10
+    write-timeout: 10
+    ping-interval: 0
+    retry-on-connection-failure: true
+
+toone:
+  okhttp:
+    connect-timeout: 10
+    read-timeout: 10
+    write-timeout: 10
+    ping-interval: 0
+    retry-on-connection-failure: true
+  data-source-config:
+    3:
+#      request-main-url: http://md.5mall.com/interface
+#      app-key: 帅智峰测试1
+#      app-secret: 123456
+#      company-name: 测试厂商
+      scheduleEnabled: false
+      scheduleEnabledNew: true
+      request-main-url: http://kbfwintf.etwowin.com.cn/interface
+      app-key: 3260
+      app-secret: 123456
+      company-name: 康宝电器
+    4:
+      request-main-url: http://fwptintf.etwowin.com.cn/interface
+      app-key: 32601
+      app-secret: 1234561
+      company-name: 阿诗丹顿电器有限公司
+      scheduleEnabled: false
+      scheduleEnabledNew: false
+feiyu:
+  app-key: feiyuTest
+  app-secret: cc03e747a6afbbcbf8be7668acfebee5
+  methods[0]: /feiyu/pushOrder
+  methods[1]: /test/security
+  data-source: 5
+
+
